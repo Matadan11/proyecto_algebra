@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Simulación Funnel Ecommerce</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1a1f3a 100%);
+            color: #e0e7ff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(90deg, #1e293b, #3b82f6);
+            padding: 30px 20px;
+            text-align: center;
+            font-size: 32px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            letter-spacing: 1px;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 25px;
+            padding: 30px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .controls {
+            background: linear-gradient(135deg, #1e293b, #2d3748);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            border: 1px solid #3f46e6;
+        }
+
+        .controls h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #60a5fa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .param-group {
+            margin-bottom: 20px;
+        }
+
+        .param-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #bfdbfe;
+            font-size: 14px;
+        }
+
+        .param-group span {
+            color: #60a5fa;
+            font-weight: bold;
+        }
+
+        .param-group input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #334155;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .param-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.5);
+            transition: all 0.2s;
+        }
+
+        .param-group input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.5);
+            transition: all 0.2s;
+        }
+
+        .param-group input[type="range"]::-webkit-slider-thumb:hover {
+            background: #60a5fa;
+            transform: scale(1.2);
+        }
+
+        .chart-container {
+            background: linear-gradient(135deg, #1e293b, #2d3748);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            border: 1px solid #3f46e6;
+        }
+
+        .chart-container h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #60a5fa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button {
+            margin-top: 12px;
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(90deg, #2563eb, #3b82f6);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        button:hover {
+            background: linear-gradient(90deg, #1e40af, #2563eb);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(37, 99, 235, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .button-group {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #3f46e6;
+        }
+
+        .button-group button {
+            margin-top: 8px;
+            background: linear-gradient(90deg, #0d47a1, #1565c0);
+            font-size: 12px;
+        }
+
+        .button-group button:hover {
+            background: linear-gradient(90deg, #1565c0, #1976d2);
+        }
+
+        #insightBox {
+            margin-top: 20px;
+            background: linear-gradient(135deg, #0f4c75, #1b5e9d);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #60a5fa;
+            color: #bfdbfe;
+            font-size: 14px;
+            line-height: 1.6;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section {
+            margin: 30px;
+            background: linear-gradient(135deg, #1e293b, #2d3748);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            border: 1px solid #3f46e6;
+        }
+
+        .section h3 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #60a5fa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .section pre {
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+            overflow-x: auto;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #a0aec0;
+        }
+
+        .business-analysis {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .analysis-item {
+            background: linear-gradient(135deg, #0f4c75, #1b5e9d);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #60a5fa;
+        }
+
+        .analysis-item b {
+            color: #60a5fa;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .analysis-item p {
+            color: #bfdbfe;
+            font-size: 14px;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            header {
+                font-size: 24px;
+                padding: 20px;
+            }
+
+            .section {
+                margin: 20px;
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+                gap: 15px;
+            }
+
+            .controls {
+                padding: 15px;
+            }
+
+            .chart-container {
+                padding: 15px;
+            }
+
+            button {
+                padding: 10px;
+                font-size: 12px;
+            }
+
+            .section {
+                margin: 15px;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>Simulación Dinámica del Funnel</header>
+
+    <div class="container">
+
+        <div class="controls">
+            <h3>⚙️ Parámetros</h3>
+
+            <div class="param-group">
+                <label>λ_VP (Visita → Producto): <span id="vp_val">0.6057</span></label>
+                <input type="range" min="0" max="1" step="0.01" value="0.6057" id="vp">
+            </div>
+
+            <div class="param-group">
+                <label>λ_PC (Producto → Carrito): <span id="pc_val">0.1638</span></label>
+                <input type="range" min="0" max="1" step="0.01" value="0.1638" id="pc">
+            </div>
+
+            <div class="param-group">
+                <label>λ_CB (Carrito → Compra): <span id="cb_val">0.0163</span></label>
+                <input type="range" min="0" max="1" step="0.005" value="0.0163" id="cb">
+            </div>
+
+            <div class="param-group">
+                <label>λ_CA (Carrito → Abandono): <span id="ca_val">0.10</span></label>
+                <input type="range" min="0" max="1" step="0.01" value="0.10" id="ca">
+            </div>
+
+            <button onclick="simulate()">▶️ Simular</button>
+
+            <div class="button-group">
+                <button onclick="scenario1()">📈 Escenario 1: Mejorar Conversión</button>
+                <button onclick="scenario2()">📊 Escenario 2: Reducir Abandono</button>
+                <button onclick="scenario3()">🚀 Escenario 3: Más Tráfico</button>
+            </div>
+
+            <div id="insightBox">
+                💡 Insight aparecerá aquí...
+            </div>
+
+        </div>
+
+        <div class="chart-container">
+            <h3>📊 Visualización del Funnel</h3>
+            <canvas id="chart"></canvas>
+        </div>
+
+    </div>
+
+    <div class="section">
+        <h3>📐 Código del Modelo Dinámico</h3>
+        <pre>import numpy as np
+from scipy.integrate import odeint
+
+# Parámetros del modelo (obtenidos del análisis)
+lambda_VP = 0.6057  # Visita → Producto
+lambda_PC = 0.1638  # Producto → Carrito
+lambda_CB = 0.0163  # Carrito → Compra
+lambda_CA = 0.10    # Carrito → Abandono
+
+# Sistema de ecuaciones diferenciales
+def funnel_system(y, t, lambda_VP, lambda_PC, lambda_CB, lambda_CA):
+    """
+    Modelo dinámico del funnel de conversión ecommerce
+    
+    Variables de estado:
+    - V(t): Visitas
+    - P(t): Producto visto
+    - C(t): Carrito
+    - B(t): Compras realizadas
+    - A(t): Abandonos
+    """
+    V, P, C, B, A = y
+    
+    # Ecuaciones diferenciales
+    dVdt = -lambda_VP * V
+    dPdt = lambda_VP * V - lambda_PC * P
+    dCdt = lambda_PC * P - (lambda_CB + lambda_CA) * C
+    dBdt = lambda_CB * C
+    dAdt = lambda_CA * C
+    
+    return [dVdt, dPdt, dCdt, dBdt, dAdt]
+
+# Condiciones iniciales
+V0 = 10000   # visitas iniciales
+P0 = 0       # sin usuarios en producto
+C0 = 0       # sin usuarios en carrito
+B0 = 0       # sin compras
+A0 = 0       # sin abandonos
+
+y0 = [V0, P0, C0, B0, A0]
+
+# Tiempo de simulación
+t = np.linspace(0, 50, 1000)
+
+# Resolver sistema
+solution = odeint(
+    funnel_system,
+    y0,
+    t,
+    args=(lambda_VP, lambda_PC, lambda_CB, lambda_CA)
+)
+
+V, P, C, B, A = solution.T</pre>
+    </div>
+
+    <div class="section">
+        <h3>💼 Análisis de Negocio</h3>
+        <div class="business-analysis">
+            <div class="analysis-item">
+                <b>🎯 Mayor Pérdida:</b>
+                <p>Carrito → Compra</p>
+            </div>
+            <div class="analysis-item">
+                <b>⚡ Mayor Impacto:</b>
+                <p>λ_CB (Conversión carrito)</p>
+            </div>
+            <div class="analysis-item">
+                <b>💡 Recomendación:</b>
+                <p>Optimizar el proceso de checkout</p>
+            </div>
+            <div class="analysis-item">
+                <b>📊 Próximos Pasos:</b>
+                <p>A/B Testing en checkout</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        let chart;
+
+        const chartColors = {
+            V: '#60a5fa',
+            P: '#34d399',
+            C: '#fbbf24',
+            B: '#f87171',
+            A: '#a78bfa'
+        };
+
+        function simulate(V_init = 10000) {
+
+            let lambda_VP = parseFloat(document.getElementById("vp").value);
+            let lambda_PC = parseFloat(document.getElementById("pc").value);
+            let lambda_CB = parseFloat(document.getElementById("cb").value);
+            let lambda_CA = parseFloat(document.getElementById("ca").value);
+
+            document.getElementById("vp_val").innerText = lambda_VP.toFixed(4);
+            document.getElementById("pc_val").innerText = lambda_PC.toFixed(4);
+            document.getElementById("cb_val").innerText = lambda_CB.toFixed(4);
+            document.getElementById("ca_val").innerText = lambda_CA.toFixed(4);
+
+            let V = V_init, P = 0, C = 0, B = 0, A = 0;
+
+            let V_arr = [], P_arr = [], C_arr = [], B_arr = [], A_arr = [], time = [];
+
+            for (let t = 0; t < 50; t++) {
+                let dV = -lambda_VP * V;
+                let dP = lambda_VP * V - lambda_PC * P;
+                let dC = lambda_PC * P - (lambda_CB + lambda_CA) * C;
+                let dB = lambda_CB * C;
+                let dA = lambda_CA * C;
+
+                V += dV; P += dP; C += dC; B += dB; A += dA;
+
+                V_arr.push(Math.max(0, V)); 
+                P_arr.push(Math.max(0, P)); 
+                C_arr.push(Math.max(0, C));
+                B_arr.push(Math.max(0, B)); 
+                A_arr.push(Math.max(0, A)); 
+                time.push(t);
+            }
+
+            if (chart) chart.destroy();
+
+            chart = new Chart(document.getElementById("chart"), {
+                type: "line",
+                data: {
+                    labels: time,
+                    datasets: [
+                        { 
+                            label: "👁️ Visitas", 
+                            data: V_arr,
+                            borderColor: chartColors.V,
+                            backgroundColor: 'rgba(96, 165, 250, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true
+                        },
+                        { 
+                            label: "📦 Producto", 
+                            data: P_arr,
+                            borderColor: chartColors.P,
+                            backgroundColor: 'rgba(52, 211, 153, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true
+                        },
+                        { 
+                            label: "🛒 Carrito", 
+                            data: C_arr,
+                            borderColor: chartColors.C,
+                            backgroundColor: 'rgba(251, 191, 36, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true
+                        },
+                        { 
+                            label: "✅ Compras", 
+                            data: B_arr,
+                            borderColor: chartColors.B,
+                            backgroundColor: 'rgba(248, 113, 113, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true
+                        },
+                        { 
+                            label: "❌ Abandono", 
+                            data: A_arr,
+                            borderColor: chartColors.A,
+                            backgroundColor: 'rgba(167, 139, 250, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#bfdbfe',
+                                font: { size: 12, weight: 'bold' },
+                                padding: 15,
+                                usePointStyle: true
+                            },
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#9ca3af', font: { size: 11 } },
+                            grid: { color: 'rgba(75, 85, 99, 0.2)' }
+                        },
+                        x: {
+                            ticks: { color: '#9ca3af', font: { size: 11 } },
+                            grid: { color: 'rgba(75, 85, 99, 0.2)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function scenario1() {
+            document.getElementById("cb").value = 0.05;
+            simulate();
+            showInsight("✨ Aumentar conversión genera más compras sin aumentar tráfico inicial. Este es el escenario más eficiente.");
+        }
+
+        function scenario2() {
+            document.getElementById("ca").value = 0.05;
+            simulate();
+            showInsight("🎯 Reducir abandono mejora la eficiencia del funnel. Los clientes que llegan al carrito tienen más probabilidad de comprar.");
+        }
+
+        function scenario3() {
+            simulate(20000);
+            showInsight("📈 Más tráfico aumenta el volumen absoluto de compras pero no la eficiencia. Considera combinarlo con mejoras de conversión.");
+        }
+
+        function showInsight(text) {
+            document.getElementById("insightBox").innerText = text;
+        }
+
+        simulate();
+
+    </script>
+
+</body>
+
+</html>
